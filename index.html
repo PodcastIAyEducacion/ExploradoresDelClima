@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exploradores del Clima — 5º CEIP San Fernando</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F7F0E3;
+  --card: #FFFDF7;
+  --primary: #1B6B7B;
+  --primary-dark: #124E5A;
+  --accent: #E89020;
+  --accent-light: #FFF0CC;
+  --success: #2E7D32;
+  --success-light: #E8F5E9;
+  --danger: #C0392B;
+  --danger-light: #FDEDEC;
+  --terra: #C25B30;
+  --terra-light: #FDEBD8;
+  --text: #2C2C2C;
+  --text-soft: #666;
+  --border: #DDD3C0;
+  --shadow: 0 4px 20px rgba(0,0,0,0.10);
+  --radius: 16px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  background-image: radial-gradient(circle at 20% 20%, rgba(27,107,123,0.06) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(232,144,32,0.06) 0%, transparent 50%);
+  min-height: 100vh;
+  color: var(--text);
+}
+h1,h2,h3 { font-family: 'Fredoka One', cursive; letter-spacing: 0.5px; }
+
+/* LAYOUT */
+#app { max-width: 780px; margin: 0 auto; padding: 20px 16px 60px; }
+
+/* TOP BAR */
+#topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--primary); color: white; border-radius: var(--radius);
+  padding: 10px 18px; margin-bottom: 20px; box-shadow: var(--shadow);
+}
+#topbar .title { font-family: 'Fredoka One', cursive; font-size: 1.1rem; }
+#topbar .meta { display: flex; gap: 14px; align-items: center; font-size: 0.85rem; }
+.comodin-bar { display: flex; gap: 5px; }
+.comodin-btn {
+  background: var(--accent); border: none; border-radius: 50%;
+  width: 32px; height: 32px; cursor: pointer; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.comodin-btn:hover { transform: scale(1.15); }
+.comodin-btn.used { background: #666; cursor: not-allowed; opacity: 0.5; }
+.comodin-btn.used:hover { transform: none; }
+
+/* PROGRESS */
+#progress-wrap { margin-bottom: 18px; }
+.progress-label { font-size: 0.8rem; color: var(--text-soft); margin-bottom: 6px; display: flex; justify-content: space-between; }
+.progress-bar { background: var(--border); border-radius: 20px; height: 10px; overflow: hidden; }
+.progress-fill { background: linear-gradient(90deg, var(--primary), var(--accent)); height: 100%; border-radius: 20px; transition: width 0.5s ease; }
+
+/* CARDS */
+.card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 26px; margin-bottom: 18px;
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+  animation: slideUp 0.4s ease;
+}
+@keyframes slideUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+
+/* PHASE HEADER */
+.phase-header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white; border-radius: var(--radius); padding: 22px 26px;
+  margin-bottom: 18px; box-shadow: var(--shadow);
+}
+.phase-header .num { font-size: 0.85rem; opacity: 0.75; text-transform: uppercase; letter-spacing: 1px; }
+.phase-header h2 { font-size: 1.6rem; margin: 4px 0 6px; }
+.phase-header p { font-size: 0.9rem; opacity: 0.9; line-height: 1.5; }
+
+/* GUIDE */
+.guide-box {
+  display: flex; gap: 14px; align-items: flex-start;
+  background: var(--accent-light); border-radius: 12px;
+  padding: 16px; margin-bottom: 16px;
+  border-left: 4px solid var(--accent);
+}
+.guide-avatar { font-size: 2.2rem; flex-shrink: 0; }
+.guide-text { font-size: 0.92rem; line-height: 1.6; color: var(--text); }
+.guide-text strong { color: var(--primary); }
+
+/* CONTENT BOX */
+.content-box {
+  background: #F0F7F9; border-radius: 12px;
+  padding: 18px; margin-bottom: 14px;
+  border: 1px solid #C5DDE3;
+}
+.content-box h3 { color: var(--primary); margin-bottom: 10px; font-size: 1.05rem; }
+.content-box ul { padding-left: 18px; }
+.content-box li { margin-bottom: 6px; font-size: 0.9rem; line-height: 1.5; }
+.content-box p { font-size: 0.9rem; line-height: 1.6; }
+
+/* TABLE */
+.climate-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 10px 0; }
+.climate-table th { background: var(--primary); color: white; padding: 8px 10px; text-align: left; }
+.climate-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); }
+.climate-table tr:nth-child(even) td { background: #F5F0E8; }
+
+/* QUESTIONS */
+.question-block { margin-bottom: 20px; }
+.question-text { font-weight: 700; font-size: 1rem; color: var(--primary-dark); margin-bottom: 12px; line-height: 1.5; }
+.options { display: flex; flex-direction: column; gap: 8px; }
+.option-btn {
+  background: white; border: 2px solid var(--border);
+  border-radius: 10px; padding: 12px 16px; text-align: left;
+  cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.9rem;
+  font-weight: 600; transition: all 0.2s; color: var(--text);
+}
+.option-btn:hover:not(:disabled) { border-color: var(--primary); background: #EEF7FA; transform: translateX(4px); }
+.option-btn.correct { background: var(--success-light); border-color: var(--success); color: var(--success); }
+.option-btn.wrong { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
+.option-btn:disabled { cursor: default; }
+
+.feedback-box {
+  border-radius: 10px; padding: 12px 16px; margin-top: 10px; font-size: 0.9rem; line-height: 1.5;
+  animation: slideUp 0.3s ease;
+}
+.feedback-box.correct { background: var(--success-light); border: 1px solid var(--success); color: var(--success); }
+.feedback-box.wrong { background: var(--danger-light); border: 1px solid var(--danger); color: var(--danger); }
+.feedback-box.hint { background: var(--accent-light); border: 1px solid var(--accent); color: #7A4A00; }
+
+/* HELP CARD */
+.help-card {
+  background: var(--terra-light); border: 2px solid var(--terra);
+  border-radius: 12px; padding: 16px; margin: 10px 0;
+  animation: slideUp 0.3s ease;
+}
+.help-card h4 { color: var(--terra); margin-bottom: 6px; font-family: 'Fredoka One', cursive; }
+.help-card p { font-size: 0.88rem; line-height: 1.5; }
+
+/* PAPER TASK */
+.paper-task {
+  background: #FFFDE7; border: 2px dashed #F9A825;
+  border-radius: var(--radius); padding: 20px; margin: 16px 0;
+}
+.paper-task .paper-icon { font-size: 2rem; margin-bottom: 8px; }
+.paper-task h3 { color: #E65100; font-size: 1.1rem; margin-bottom: 8px; }
+.paper-task p { font-size: 0.9rem; line-height: 1.6; color: #5D4037; }
+.paper-task .teacher-note {
+  background: #FFF9C4; border-radius: 8px; padding: 10px 14px;
+  margin-top: 12px; font-size: 0.85rem; color: #5D4037;
+  border-left: 3px solid #F9A825;
+}
+
+/* VALIDATE BUTTON */
+.validate-btn {
+  background: linear-gradient(135deg, #E65100, #F57C00);
+  color: white; border: none; border-radius: 10px;
+  padding: 12px 22px; font-family: 'Fredoka One', cursive;
+  font-size: 1rem; cursor: pointer; margin-top: 14px;
+  box-shadow: 0 4px 12px rgba(230,81,0,0.3);
+  transition: all 0.2s; width: 100%;
+}
+.validate-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(230,81,0,0.4); }
+
+/* FAQ */
+.faq-section { margin-top: 14px; }
+.faq-toggle {
+  background: none; border: 2px solid var(--primary);
+  border-radius: 10px; padding: 10px 16px; width: 100%;
+  text-align: left; cursor: pointer; font-family: 'Nunito', sans-serif;
+  font-weight: 700; color: var(--primary); font-size: 0.9rem;
+  display: flex; justify-content: space-between; align-items: center;
+  transition: all 0.2s;
+}
+.faq-toggle:hover { background: #EEF7FA; }
+.faq-list { display: none; margin-top: 8px; }
+.faq-list.open { display: block; }
+.faq-item { border-bottom: 1px solid var(--border); padding: 10px 4px; }
+.faq-q { font-weight: 700; font-size: 0.88rem; color: var(--primary-dark); cursor: pointer; display: flex; justify-content: space-between; }
+.faq-a { font-size: 0.85rem; color: var(--text-soft); line-height: 1.5; margin-top: 6px; display: none; padding: 6px 0; }
+.faq-a.open { display: block; }
+
+/* WORD REVEAL */
+.word-reveal {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white; border-radius: var(--radius); padding: 24px;
+  text-align: center; margin: 18px 0; animation: pulse 0.6s ease;
+}
+@keyframes pulse { 0%{transform:scale(0.95)} 50%{transform:scale(1.03)} 100%{transform:scale(1)} }
+.word-reveal .word { font-family: 'Fredoka One', cursive; font-size: 2.8rem; letter-spacing: 4px; color: var(--accent); display: block; margin: 8px 0; }
+.word-reveal p { font-size: 0.9rem; opacity: 0.9; }
+.word-counter { font-size: 0.85rem; opacity: 0.75; margin-top: 6px; }
+.notebook-reminder {
+  background: #FFF9C4; border: 2px solid #F9A825;
+  border-radius: 10px; padding: 12px 16px; text-align: center;
+  font-size: 0.9rem; color: #5D4037; font-weight: 700; margin-top: 10px;
+}
+
+/* BUTTONS */
+.btn {
+  border: none; border-radius: 10px; padding: 13px 26px;
+  font-family: 'Fredoka One', cursive; font-size: 1rem;
+  cursor: pointer; transition: all 0.2s; display: inline-block;
+}
+.btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 14px rgba(27,107,123,0.3); }
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+.btn-accent { background: var(--accent); color: white; box-shadow: 0 4px 14px rgba(232,144,32,0.3); }
+.btn-accent:hover { transform: translateY(-2px); }
+.btn-success { background: var(--success); color: white; box-shadow: 0 4px 14px rgba(46,125,50,0.3); }
+.btn-success:hover { transform: translateY(-2px); }
+.btn-block { width: 100%; text-align: center; }
+
+/* CELEBRATION */
+.celebration {
+  text-align: center; padding: 30px;
+  background: linear-gradient(135deg, #E8F5E9, #F1F8E9);
+  border-radius: var(--radius); border: 2px solid var(--success);
+}
+.celebration .trophy { font-size: 4rem; animation: bounce 0.8s ease; }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+.celebration h2 { color: var(--success); font-size: 1.8rem; margin: 10px 0 8px; }
+.celebration p { color: #388E3C; font-size: 0.95rem; line-height: 1.6; }
+
+/* DIPLOMA */
+.diploma {
+  background: linear-gradient(135deg, #FFFDE7, #FFF8E1);
+  border: 4px solid var(--accent); border-radius: var(--radius);
+  padding: 32px; text-align: center; margin: 18px 0;
+  box-shadow: 0 6px 24px rgba(232,144,32,0.2);
+}
+.diploma .deco { font-size: 1.5rem; letter-spacing: 6px; color: var(--accent); }
+.diploma h2 { font-size: 1.6rem; color: var(--primary-dark); margin: 12px 0 6px; }
+.diploma .recipient { font-size: 1.2rem; color: var(--terra); font-weight: 800; margin: 10px 0; }
+.diploma p { font-size: 0.88rem; color: var(--text-soft); line-height: 1.6; }
+.diploma .school { font-weight: 700; color: var(--primary); font-size: 0.95rem; }
+.diploma .date { font-size: 0.82rem; color: var(--text-soft); margin-top: 12px; }
+.diploma-divider { border: none; border-top: 1px dashed var(--accent); margin: 14px 0; }
+#diploma-name-input {
+  border: 2px solid var(--border); border-radius: 8px;
+  padding: 10px 16px; font-family: 'Nunito', sans-serif;
+  font-size: 1rem; width: 100%; max-width: 340px;
+  margin: 10px auto; display: block; text-align: center;
+}
+#diploma-name-input:focus { outline: none; border-color: var(--primary); }
+
+/* PHRASE COLLECTOR */
+.phrase-collector {
+  background: var(--primary-dark); border-radius: 12px;
+  padding: 14px 18px; margin-bottom: 14px; text-align: center;
+}
+.phrase-collector .label { font-size: 0.78rem; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.phrase-slots { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.phrase-slot {
+  background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 8px; padding: 6px 12px; min-width: 70px;
+  font-family: 'Fredoka One', cursive; font-size: 1rem;
+  color: rgba(255,255,255,0.3); text-align: center; transition: all 0.4s;
+}
+.phrase-slot.revealed { color: var(--accent); border-color: var(--accent); background: rgba(232,144,32,0.15); }
+
+/* COMODIN MODAL */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.modal-box {
+  background: white; border-radius: var(--radius);
+  padding: 28px; max-width: 480px; width: 90%;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+  animation: slideUp 0.3s ease;
+}
+.modal-box h3 { color: var(--primary); margin-bottom: 12px; font-size: 1.3rem; }
+.modal-box p { font-size: 0.9rem; line-height: 1.6; color: var(--text); }
+.modal-close {
+  background: var(--primary); color: white; border: none;
+  border-radius: 8px; padding: 10px 20px;
+  font-family: 'Fredoka One', cursive; font-size: 0.95rem;
+  cursor: pointer; margin-top: 16px; width: 100%;
+}
+
+/* STARS */
+.stars { font-size: 1.3rem; letter-spacing: 2px; }
+
+/* FOOTER */
+.footer-credit {
+  text-align: center; font-size: 0.72rem; color: var(--text-soft);
+  margin-top: 40px; padding-top: 16px;
+  border-top: 1px solid var(--border); line-height: 1.8;
+}
+
+/* SCREEN: WELCOME */
+.welcome-screen { text-align: center; padding: 20px 0; }
+.welcome-screen .big-icon { font-size: 5rem; animation: float 3s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.welcome-screen h1 { font-size: 2rem; color: var(--primary); margin: 14px 0 8px; }
+.welcome-screen .subtitle { font-size: 1rem; color: var(--text-soft); margin-bottom: 24px; line-height: 1.6; }
+.welcome-screen .school-badge {
+  display: inline-block; background: var(--primary); color: white;
+  border-radius: 20px; padding: 6px 18px; font-size: 0.85rem;
+  font-weight: 700; margin-bottom: 20px;
+}
+
+/* UTILS */
+.mt-10 { margin-top: 10px; }
+.mt-16 { margin-top: 16px; }
+.mt-20 { margin-top: 20px; }
+.text-center { text-align: center; }
+.hidden { display: none !important; }
+.emoji-big { font-size: 1.5rem; }
+@media print { #topbar, #progress-wrap, #phrase-bar, .faq-section, .btn, .validate-btn, .guide-box, .comodin-bar, .footer-credit { display:none !important; } body { background: white; } .diploma { border: 3px solid #E89020; box-shadow: none; } }
+
+/* TTS HIGHLIGHTING */
+.tts-bar {
+  display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+  background:#E8F5E9; border:2px solid var(--success);
+  border-radius:10px; padding:10px 14px; margin-bottom:12px;
+}
+.tts-btn {
+  background:var(--success); color:white; border:none;
+  border-radius:8px; padding:8px 16px; cursor:pointer;
+  font-family:'Nunito',sans-serif; font-weight:700; font-size:0.88rem;
+  display:flex; align-items:center; gap:6px; transition:all 0.2s;
+}
+.tts-btn:hover { background:var(--success-dark,#1B5E20); }
+.tts-btn.stop { background:#C62828; }
+.tts-info { font-size:0.82rem; color:#2E7D32; }
+.word-highlight { transition: background 0.1s; border-radius:3px; padding:1px 2px; }
+.word-highlight.speaking { background:#FFF176; color:#000; font-weight:700; }
+.tts-permission-box {
+  background:#FFF8E1; border:2px solid var(--accent);
+  border-radius:12px; padding:18px; text-align:center; margin-bottom:14px;
+}
+.tts-permission-box h4 { color:var(--accent); font-family:'Fredoka One',cursive; margin-bottom:8px; }
+.tts-permission-box p { font-size:0.88rem; color:var(--text-soft); margin-bottom:14px; }
+.tts-perm-btns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+.tts-perm-teacher { background:var(--primary); color:white; border:none; border-radius:8px; padding:10px 18px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:700; font-size:0.88rem; }
+.tts-perm-deny { background:#999; color:white; border:none; border-radius:8px; padding:10px 18px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:700; font-size:0.88rem; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar" class="hidden">
+    <span class="title">🌍 Exploradores del Clima</span>
+    <div class="meta">
+      <span id="phase-label">Fase 1/5</span>
+      <div class="comodin-bar" id="comodin-bar"></div>
+    </div>
+  </div>
+  <div id="progress-wrap" class="hidden">
+    <div class="progress-label"><span id="progress-text">Progreso</span><span id="progress-pct">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+  <div id="phrase-bar" class="hidden">
+    <div class="phrase-collector">
+      <div class="label">🔑 Tu frase secreta</div>
+      <div class="phrase-slots" id="phrase-slots"></div>
+    </div>
+  </div>
+  <div id="main-content"></div>
+  <div class="footer-credit">
+    Elaborado por <strong>Luis Gómez y Elisa Sánchez</strong> · Podcast <em>IA y Educación</em> · CEIP San Fernando, Fuente del Rey, Dos Hermanas · 5º de Primaria<br>
+    Generado con asistencia de Claude (Anthropic) · Uso educativo no comercial
+  </div>
+</div>
+<div id="modal-overlay" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h3 id="modal-title">🧭 Pista</h3>
+    <p id="modal-body"></p>
+    <button class="modal-close" onclick="closeModal()">Entendido ✓</button>
+  </div>
+</div>
+<script>
+// ============================================================
+// GAME DATA
+// ============================================================
+const PHRASES = ['EL','CLIMA','MOLDEA','NUESTRA','TIERRA'];
+
+const FAQS = [
+  // Phase 1
+  [
+    {q:'¿En qué se diferencia el tiempo del clima?', a:'El tiempo es lo que pasa hoy en el cielo (sol, lluvia, frío...). El clima es cómo suele ser ese lugar durante muchos años.'},
+    {q:'¿Por qué cambia el tiempo tan rápido?', a:'El tiempo cambia porque el aire se mueve, la temperatura sube o baja y la humedad varía. El clima, en cambio, es mucho más estable.'},
+    {q:'¿Cuántos elementos tiene el tiempo?', a:'Cinco: temperatura, precipitación, humedad, presión atmosférica y viento.'},
+    {q:'¿Puedo buscar más información en mi libro?', a:'¡Claro! Consulta el tema de Conocimiento del Medio en tu libro. Busca las páginas sobre meteorología y climatología.'},
+  ],
+  // Phase 2
+  [
+    {q:'¿Para qué sirve el pluviómetro?', a:'Para medir cuánta lluvia cae en un metro cuadrado. Se mide en litros por metro cuadrado (l/m²).'},
+    {q:'¿Qué diferencia hay entre la veleta y el anemómetro?', a:'La veleta indica de dónde viene el viento (norte, sur, este, oeste). El anemómetro mide a qué velocidad va.'},
+    {q:'¿Qué factores hacen que un lugar tenga más frío o más calor?', a:'La latitud (qué tan cerca del Ecuador está), la altitud (la altura), la distancia al mar y el relieve (montañas y valles).'},
+    {q:'¿Puedo consultar mi cuaderno para repasar los instrumentos?', a:'Sí, mira tus apuntes o el libro. Busca los nombres y funciones de cada instrumento meteorológico.'},
+  ],
+  // Phase 3
+  [
+    {q:'¿Qué es el clima atlántico?', a:'Es el clima de las zonas cercanas al océano. Tiene temperaturas suaves todo el año y lluvias frecuentes en todas las estaciones.'},
+    {q:'¿Por qué el mar suaviza las temperaturas?', a:'El agua del mar tarda mucho en calentarse y en enfriarse. Por eso en verano refresca y en invierno da calor. Se llama inercia térmica.'},
+    {q:'¿Dónde hay clima atlántico en España?', a:'En el norte y noroeste: Galicia, Asturias, Cantabria y el País Vasco.'},
+    {q:'¿Dónde busco más info sobre el clima atlántico?', a:'En tu libro de Conocimiento del Medio, en el apartado de los tipos de clima. También puedes mirar los mapas climáticos.'},
+  ],
+  // Phase 4
+  [
+    {q:'¿Cuál es la diferencia entre el clima mediterráneo y el continental?', a:'El mediterráneo tiene veranos secos y calurosos con inviernos suaves. El continental tiene temperaturas extremas: inviernos muy fríos y veranos muy calurosos.'},
+    {q:'¿Por qué el clima mediterráneo tiene poca lluvia en verano?', a:'Porque en verano las masas de aire cálido y seco dominan la región. Las lluvias se concentran en otoño e invierno.'},
+    {q:'¿Qué es la amplitud térmica?', a:'Es la diferencia entre la temperatura más alta y la más baja del año. En el clima continental puede ser de más de 30 grados.'},
+    {q:'¿Puedo repasar los tres climas en mi libro?', a:'Sí. Busca la tabla comparativa de los climas templados. Repasa temperaturas, precipitaciones y vegetación de cada uno.'},
+  ],
+  // Phase 5
+  [
+    {q:'¿Qué es la hibernación estival?', a:'Es cuando algunas plantas mediterráneas detienen su crecimiento en verano para no perder agua. Es parecido a la hibernación de los animales, pero en verano.'},
+    {q:'¿Por qué los animales del clima continental tienen pelaje grueso?', a:'Porque los inviernos son muy fríos, con temperaturas por debajo de cero grados. El pelaje los protege del frío extremo.'},
+    {q:'¿Qué animales viven en el clima mediterráneo?', a:'El lince ibérico, el águila imperial y las cigarras son animales típicos del clima mediterráneo en España.'},
+    {q:'¿Puedo usar mi cuaderno para repasar las adaptaciones?', a:'¡Por supuesto! Repasa las adaptaciones de plantas y animales a cada tipo de clima. Es un punto muy importante del tema.'},
+  ]
+];
+
+const PAPER_TASKS = [
+  {
+    title: '📝 Tarea en papel — Fase 1',
+    task: `Responde en tu cuaderno las siguientes preguntas con frases completas:<br><br>
+<strong>1.</strong> ¿Qué diferencia hay entre el tiempo atmosférico y el clima? Pon un ejemplo de cada uno.<br>
+<strong>2.</strong> Escribe los 5 elementos del tiempo atmosférico y el instrumento que mide cada uno.<br>
+<strong>3.</strong> ¿Por qué crees que es útil conocer la diferencia entre tiempo y clima? Escribe 2 o 3 frases con tu opinión.<br><br>
+<em>Recuerda escribir con letra clara y usando frases completas.</em>`,
+    teacherNote: '👩‍🏫 Docente: comprueba que el alumno/a diferencia correctamente tiempo y clima con sus propias palabras, que enumera los 5 elementos con sus instrumentos, y que la pregunta 3 refleja comprensión real. Valida cuando esté correcto.'
+  },
+  {
+    title: '📝 Tarea en papel — Fase 2',
+    task: `Responde en tu cuaderno las siguientes preguntas con frases completas:<br><br>
+<strong>1.</strong> ¿Por qué hace más calor en el Ecuador que en los polos? Explícalo con tus palabras.<br>
+<strong>2.</strong> ¿Cómo influye el mar en el clima de una ciudad costera? ¿Y en una ciudad del interior?<br>
+<strong>3.</strong> Explica qué ocurre con el clima cuando una cordillera bloquea las nubes del mar. ¿Qué diferencia hay entre el lado que da al mar y el lado interior?<br>
+<strong>4.</strong> Escribe los cuatro factores del clima y una frase explicando cada uno.<br><br>
+<em>Escribe con tus propias palabras, no copies exactamente del libro.</em>`,
+    teacherNote: '👩‍🏫 Docente: verifica que el alumno/a explica los cuatro factores con sus propias palabras y comprende el efecto del mar y las montañas. Valida cuando las respuestas demuestren comprensión.'
+  },
+  {
+    title: '📝 Tarea en papel — Fase 3',
+    task: `<strong>✏️ Copia estas frases en tu cuaderno y completa los huecos:</strong><br><br>
+<div style="background:#f9f9f9;border-left:4px solid #1B6B7B;border-radius:8px;padding:14px 16px;margin:8px 0;line-height:2.2;font-size:0.95rem">
+1. El clima atlántico tiene temperaturas <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> durante todo el año, con veranos frescos entre 18 y <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> °C.<br>
+2. Las precipitaciones en el clima atlántico son <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> y superan los <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> mm anuales.<br>
+3. La <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> térmica es la capacidad del <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> para actuar como regulador de la temperatura.<br>
+4. En verano, el mar <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> el ambiente de la costa, y en invierno lo <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>.<br>
+5. Dos animales típicos del clima atlántico son el <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> y el <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>.<br>
+6. Los bosques atlánticos están formados principalmente por <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> y <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>.
+</div>
+<br><em style="font-size:0.82rem;color:#888">💡 Recuerda: puedes consultar tu libro y tus apuntes para completar los huecos.</em>`,
+    teacherNote: '👩‍🏫 Docente: las respuestas correctas son — 1: suaves / 23 °C — 2: constantes / 1000 — 3: inercia / mar — 4: refresca / calienta — 5: oso pardo / delfín (o ballena) — 6: robles / hayas. Valida cuando esté correcto.'
+  },
+  {
+    title: '📝 Tarea en papel — Fase 4',
+    task: `
+<div style="background:#FFF3E0;border-radius:10px;padding:14px 16px;margin-bottom:12px;border-left:4px solid #E65100">
+  <strong style="color:#E65100;font-size:1rem">📋 ¿Qué tienes que hacer?</strong><br>
+  <span style="font-size:0.9rem">Copia la tabla en tu cuaderno y rellena <strong>cada casilla</strong> con los datos correctos.</span>
+</div>
+
+<div style="overflow-x:auto">
+<table style="width:100%;border-collapse:collapse;font-size:0.88rem;margin:8px 0">
+  <thead>
+    <tr style="background:#1B6B7B;color:white">
+      <th style="padding:9px 10px;text-align:left;border-radius:6px 0 0 0"></th>
+      <th style="padding:9px 10px;text-align:center">🌊 ATLÁNTICO</th>
+      <th style="padding:9px 10px;text-align:center">☀️ MEDITERRÁNEO</th>
+      <th style="padding:9px 10px;text-align:center;border-radius:0 6px 0 0">❄️ CONTINENTAL</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background:#F5F5F5">
+      <td style="padding:8px 10px;font-weight:700;color:#1B6B7B">🌡️ Verano</td>
+      <td style="padding:8px 10px;text-align:center">18 – 23 °C</td>
+      <td style="padding:8px 10px;text-align:center">Más de 22 °C</td>
+      <td style="padding:8px 10px;text-align:center">Más de 30 °C</td>
+    </tr>
+    <tr style="background:white">
+      <td style="padding:8px 10px;font-weight:700;color:#1B6B7B">🧊 Invierno</td>
+      <td style="padding:8px 10px;text-align:center">6 – 12 °C</td>
+      <td style="padding:8px 10px;text-align:center">Suave (más de 5 °C)</td>
+      <td style="padding:8px 10px;text-align:center;color:#C62828;font-weight:700">Bajo 0 °C</td>
+    </tr>
+    <tr style="background:#F5F5F5">
+      <td style="padding:8px 10px;font-weight:700;color:#1B6B7B">🌧️ Lluvia</td>
+      <td style="padding:8px 10px;text-align:center">Más de 1000 mm<br><em style="font-size:0.78rem">todo el año</em></td>
+      <td style="padding:8px 10px;text-align:center">300 – 700 mm<br><em style="font-size:0.78rem">otoño e invierno</em></td>
+      <td style="padding:8px 10px;text-align:center">300 – 700 mm<br><em style="font-size:0.78rem">nieve en invierno</em></td>
+    </tr>
+    <tr style="background:white">
+      <td style="padding:8px 10px;font-weight:700;color:#1B6B7B">🌿 Planta</td>
+      <td style="padding:8px 10px;text-align:center">Roble y haya</td>
+      <td style="padding:8px 10px;text-align:center">Olivo y romero</td>
+      <td style="padding:8px 10px;text-align:center">Pino y abeto</td>
+    </tr>
+    <tr style="background:#F5F5F5">
+      <td style="padding:8px 10px;font-weight:700;color:#1B6B7B">🐾 Animal</td>
+      <td style="padding:8px 10px;text-align:center">Oso pardo, delfín</td>
+      <td style="padding:8px 10px;text-align:center">Lince ibérico</td>
+      <td style="padding:8px 10px;text-align:center">Alce y reno</td>
+    </tr>
+    <tr style="background:white">
+      <td style="padding:8px 10px;font-weight:700;color:#1B6B7B">📍 En España</td>
+      <td style="padding:8px 10px;text-align:center">Galicia, Asturias</td>
+      <td style="padding:8px 10px;text-align:center">Andalucía, Levante</td>
+      <td style="padding:8px 10px;text-align:center">Interior peninsular</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div style="background:#E8F5E9;border-radius:8px;padding:12px 14px;margin-top:12px;font-size:0.88rem;color:#2E7D32">
+  <strong>✏️ Cuando acabes de copiar la tabla, responde esta pregunta:</strong><br>
+  ¿Cuál de los tres climas es el de Dos Hermanas? ¿Por qué? Escribe 2 frases.
+</div>
+<br><em style="font-size:0.82rem;color:#888">💡 Puedes consultar tu libro para comprobar los datos antes de copiar.</em>`,
+    teacherNote: '👩‍🏫 Docente: comprueba que la tabla está copiada completa y con los datos correctos. Fíjate especialmente en las temperaturas bajo 0 °C del continental. La pregunta final: clima mediterráneo, porque los veranos son secos y calurosos. Valida cuando esté correcto.'
+  },
+  {
+    title: '📝 Tarea en papel — Fase 5',
+    task: `
+<div style="background:#FFF3E0;border-radius:10px;padding:14px 16px;margin-bottom:12px;border-left:4px solid #E65100">
+  <strong style="color:#E65100;font-size:1rem">✏️ ¿Qué tienes que hacer?</strong><br>
+  <span style="font-size:0.9rem">Copia estas frases en tu cuaderno y <strong>completa la palabra que falta</strong> en cada hueco.</span>
+</div>
+
+<div style="background:#f9f9f9;border-left:4px solid #1B6B7B;border-radius:8px;padding:16px;line-height:2.4;font-size:0.93rem">
+
+  <strong style="color:#1B6B7B">🐾 Clima continental — El alce</strong><br>
+  1. El alce tiene el pelaje muy <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> y denso para soportar el frío.<br>
+  2. En el clima continental, las temperaturas en invierno bajan <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> de los 0 °C.<br>
+  3. Gracias a su pelaje, el alce puede sobrevivir en inviernos de hasta <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> grados bajo cero.<br><br>
+
+  <strong style="color:#C25B30">🌿 Clima mediterráneo — El romero</strong><br>
+  4. El romero entra en "<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> estival" para no perder agua en verano.<br>
+  5. Sus hojas son <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> y duras para reducir la evaporación del agua.<br>
+  6. El romero vuelve a crecer con fuerza cuando llegan las lluvias de <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>.<br><br>
+
+  <strong style="color:#2E7D32">🌳 Clima atlántico — El roble</strong><br>
+  7. El roble tiene hojas <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> porque hay mucha agua y no necesita ahorrarla.<br>
+  8. Las hojas grandes del roble capturan más <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> solar para hacer la fotosíntesis.<br>
+  9. El roble puede crecer <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> el año porque la lluvia es constante.<br>
+
+</div>
+
+<div style="background:#E8F5E9;border-radius:8px;padding:12px 14px;margin-top:12px;font-size:0.88rem;color:#2E7D32">
+  <strong>💭 Para pensar y escribir (2 frases):</strong><br>
+  ¿Qué crees que le pasaría al romero si lo plantásemos en el clima continental? ¿Sobreviviría? ¿Por qué?
+</div>
+<br><em style="font-size:0.82rem;color:#888">💡 Puedes consultar tu libro y tus apuntes si necesitas ayuda con algún hueco.</em>`,
+    teacherNote: '👩‍🏫 Docente: respuestas correctas — 1: grueso — 2: bajo/debajo — 3: cuarenta (-40) — 4: hibernación — 5: pequeñas — 6: otoño — 7: grandes — 8: luz — 9: todo. Reflexión final: el romero no sobreviviría bien porque no está adaptado al frío extremo bajo cero. Valida cuando haya comprensión real.'
+  }
+];
+
+// QUESTIONS: each phase has questions with 3 difficulty levels (easy/medium/hard)
+// Format: {text, options:[{text,correct}], explanation, difficulty, helpCard}
+const PHASE_QUESTIONS = [
+  // PHASE 1: Tiempo vs Clima + Instrumentos
+  [
+    {
+      text: '¿Qué describe mejor el TIEMPO ATMOSFÉRICO?',
+      options: [{text:'Cómo suele ser el tiempo en un lugar durante 30 años',correct:false},{text:'El estado de la atmósfera en un lugar y momento concretos',correct:true},{text:'La temperatura media de un continente',correct:false}],
+      explanation:'✅ ¡Exacto! El tiempo atmosférico es lo que pasa ahora mismo: si hoy llueve, hace sol o hay viento. El clima, en cambio, describe cómo suele ser ese lugar a lo largo de muchos años.',
+      difficulty:'easy',
+      helpCard:'El TIEMPO es lo de HOY. El CLIMA es lo de SIEMPRE en ese lugar. Ejemplo: "Hoy llueve" = tiempo. "En Galicia llueve mucho" = clima.'
+    },
+    {
+      text: '¿Qué instrumento mide la cantidad de lluvia caída?',
+      options: [{text:'Termómetro',correct:false},{text:'Barómetro',correct:false},{text:'Pluviómetro',correct:true}],
+      explanation:'✅ ¡Muy bien! El pluviómetro recoge el agua de lluvia y mide cuántos litros han caído por metro cuadrado. Es uno de los instrumentos básicos de toda estación meteorológica.',
+      difficulty:'easy',
+      helpCard:'Recuerda: PLUVIÓmetro → LLUVIA (pluvia = lluvia en latín). TERMÓmetro → TEMPERATURA. BARÓMETRO → PRESIÓN.'
+    },
+    {
+      text: 'Una ciudad tiene veranos muy calurosos y secos, e inviernos fríos con nieve. ¿Estamos hablando de tiempo o clima?',
+      options: [{text:'Clima, porque describe cómo suele ser ese lugar durante muchos años',correct:true},{text:'Tiempo atmosférico, porque describe el sol y la lluvia',correct:false},{text:'Ni tiempo ni clima, es solo una descripción',correct:false}],
+      explanation:'✅ ¡Perfecto! Cuando describimos cómo es habitualmente un lugar (caluroso en verano, frío en invierno), estamos hablando de su CLIMA, no del tiempo de un día concreto.',
+      difficulty:'medium',
+      helpCard:'Pregúntate: ¿estamos hablando de un día concreto o de cómo suele ser siempre ese lugar? Si es "siempre", es CLIMA.'
+    },
+    {
+      text: 'La veleta y el anemómetro miden cosas diferentes sobre el mismo elemento del tiempo. ¿Cuál es ese elemento?',
+      options: [{text:'La precipitación',correct:false},{text:'La humedad',correct:false},{text:'El viento',correct:true}],
+      explanation:'✅ ¡Exacto! Ambos instrumentos estudian el viento: la VELETA nos dice DE DÓNDE VIENE (norte, sur, este, oeste) y el ANEMÓMETRO nos dice A QUÉ VELOCIDAD va.',
+      difficulty:'medium',
+      helpCard:'Veleta = DIRECCIÓN del viento. Anemómetro = VELOCIDAD del viento. Termómetro = temperatura. Barómetro = presión. Pluviómetro = lluvia.'
+    },
+    {
+      text: '¿Por qué el viento es un elemento del tiempo importante aunque no sea visible?',
+      options: [{text:'Porque influye en la temperatura y desplaza las nubes, cambiando el tiempo',correct:true},{text:'Porque solo sirve para mover los barcos',correct:false},{text:'Porque sube la presión atmosférica siempre',correct:false}],
+      explanation:'✅ ¡Excelente razonamiento! El viento mueve masas de aire frío o cálido y desplaza nubes. Por eso, cuando sopla un viento del norte, suele llegar frío, y cuando sopla del sur, llega calor.',
+      difficulty:'hard',
+      helpCard:'El viento transporta aire (frío o caliente) y nubes de un lugar a otro. Por eso cuando cambia el viento, suele cambiar el tiempo.'
+    },
+  ],
+  // PHASE 2: Factores climáticos
+  [
+    {
+      text: '¿Qué le pasa a la temperatura cuando subimos una montaña?',
+      options: [{text:'Aumenta porque estamos más cerca del sol',correct:false},{text:'Se mantiene igual que en el valle',correct:false},{text:'Baja porque a mayor altitud hace más frío',correct:true}],
+      explanation:'✅ ¡Muy bien! Aunque parezcamos más cerca del Sol, la atmósfera es más fina en las alturas y retiene menos calor. Por eso las cimas de las montañas tienen nieve aunque estén en zonas cálidas.',
+      difficulty:'easy',
+      helpCard:'A mayor ALTITUD → menor temperatura. Por eso hay nieve en las cimas. No es porque estemos más cerca del Sol, sino porque la atmósfera retiene menos calor.'
+    },
+    {
+      text: '¿Por qué las ciudades de la costa suelen tener temperaturas más suaves que las del interior?',
+      options: [{text:'Porque están más cerca del Ecuador',correct:false},{text:'Porque el mar actúa como regulador térmico: refresca en verano y da calor en invierno',correct:true},{text:'Porque hay menos viento en la costa',correct:false}],
+      explanation:'✅ ¡Perfecto! El mar tarda mucho en calentarse y enfriarse. En verano refresca el ambiente y en invierno lo calienta. A esto lo llamamos INERCIA TÉRMICA o "efecto estufa del mar".',
+      difficulty:'easy',
+      helpCard:'El mar funciona como un AIRE ACONDICIONADO NATURAL. En verano refresca y en invierno da calor. Las ciudades de interior no tienen esta ventaja.'
+    },
+    {
+      text: 'Una cordillera montañosa bloquea el paso de nubes húmedas del mar. ¿Qué ocurrirá en la zona que queda detrás de la montaña?',
+      options: [{text:'Habrá menos lluvia porque la montaña actúa como barrera',correct:true},{text:'Habrá más lluvia porque las nubes se acumulan',correct:false},{text:'El clima no cambiará porque el viento sigue',correct:false}],
+      explanation:'✅ ¡Excelente! Las cordilleras son barreras para el aire húmedo. Las nubes suben por la ladera, llueven, y al otro lado bajan ya secas. Por eso hay zonas muy lluviosas y otras muy secas muy próximas entre sí.',
+      difficulty:'medium',
+      helpCard:'Las montañas actúan como PAREDES para las nubes. El lado que da al mar es lluvioso; el otro lado (sotavento) es más seco.'
+    },
+    {
+      text: '¿Por qué en África central (cerca del Ecuador) hace más calor que en Escandinavia (lejos del Ecuador)?',
+      options: [{text:'Porque en África hay más volcanes',correct:false},{text:'Porque en Escandinavia hay más montañas',correct:false},{text:'Porque cuanto más cerca del Ecuador, más directamente llegan los rayos del sol',correct:true}],
+      explanation:'✅ ¡Muy bien! La LATITUD determina el ángulo con el que llegan los rayos del Sol. Cerca del Ecuador llegan casi verticales (más concentrados y calientes). En los polos llegan muy inclinados y dan menos calor.',
+      difficulty:'medium',
+      helpCard:'LATITUD = distancia al Ecuador. Cerca del Ecuador: rayos directos = mucho calor. Lejos del Ecuador (polos): rayos inclinados = poco calor.'
+    },
+    {
+      text: '¿Cuál de estos lugares tendrá probablemente el clima más extremo (mucho calor en verano y mucho frío en invierno)?',
+      options: [{text:'Una isla pequeña en el océano Atlántico',correct:false},{text:'Una ciudad en el centro de un continente muy alejada del mar',correct:true},{text:'Una ciudad costera en el Mediterráneo',correct:false}],
+      explanation:'✅ ¡Perfecto razonamiento! Las zonas del interior de los continentes no se benefician del efecto regulador del mar. Por eso tienen veranos muy calurosos e inviernos muy fríos: grandes amplitudes térmicas.',
+      difficulty:'hard',
+      helpCard:'Recuerda: el mar SUAVIZA. Sin mar cerca = temperaturas extremas. Una isla rodeada de agua siempre tendrá clima más suave que el interior.'
+    },
+  ],
+  // PHASE 3: Clima Atlántico
+  [
+    {
+      text: '¿Cómo son las lluvias en el clima atlántico u oceánico?',
+      options: [{text:'Constantes y abundantes durante todo el año',correct:true},{text:'Escasas y solo en invierno',correct:false},{text:'Muy abundantes solo en verano',correct:false}],
+      explanation:'✅ ¡Muy bien! En el clima atlántico llueve prácticamente todo el año, superando los 1.000 mm anuales. Por eso hay prados verdes siempre, y la vegetación es exuberante.',
+      difficulty:'easy',
+      helpCard:'Clima atlántico = cerca del océano = lluvia TODO EL AÑO y temperaturas SUAVES. Piensa en Galicia o en el norte de España.'
+    },
+    {
+      text: '¿Qué árbol es típico de los bosques del clima atlántico?',
+      options: [{text:'Palmera y cactus',correct:false},{text:'Pino y abeto',correct:false},{text:'Roble y haya',correct:true}],
+      explanation:'✅ ¡Exacto! Los bosques atlánticos están llenos de robles y hayas. Estos árboles necesitan mucha agua, por eso prosperan en zonas con lluvia abundante todo el año.',
+      difficulty:'easy',
+      helpCard:'Clima atlántico → mucha lluvia → bosques frondosos de ROBLES y HAYAS. El pino y el abeto son del clima continental (taiga). La palmera, del tropical.'
+    },
+    {
+      text: '¿Por qué ciudades como A Coruña o Bilbao tienen veranos frescos a pesar de estar en la Península Ibérica?',
+      options: [{text:'Porque están muy al norte y hay mucha altitud',correct:false},{text:'Porque el océano Atlántico actúa como regulador térmico refrescando en verano',correct:true},{text:'Porque tienen pocas horas de sol al día',correct:false}],
+      explanation:'✅ ¡Perfecto! El Atlántico refresca la costa en verano. Las temperaturas raramente superan los 23°C en estas ciudades, aunque en el sur de España en esas mismas fechas pueden llegar a 40°C.',
+      difficulty:'medium',
+      helpCard:'El Atlántico es un REGULADOR. En verano está más frío que la tierra y la refresca. En invierno está más caliente y la calienta.'
+    },
+    {
+      text: '¿Qué animal marino es más probable encontrar cerca de las costas del clima atlántico?',
+      options: [{text:'Lince ibérico',correct:false},{text:'Reno y alce',correct:false},{text:'Ballenas y delfines',correct:true}],
+      explanation:'✅ ¡Bien! Las aguas frías y ricas en nutrientes del Atlántico Norte son el hogar de grandes cetáceos como ballenas y delfines. El lince es mediterráneo y el reno es continental.',
+      difficulty:'medium',
+      helpCard:'Recuerda la tabla: Atlántico → ballenas, delfines, oso pardo. Mediterráneo → lince ibérico, águila imperial. Continental → alce, reno.'
+    },
+    {
+      text: 'Debajo del Atlántico Norte existen cascadas submarinas gigantes. ¿Por qué son importantes para el clima?',
+      options: [{text:'Producen terremotos que calientan el agua',correct:false},{text:'Crean lluvia directamente sobre la superficie',correct:false},{text:'Mueven masas de agua fría y caliente, influyendo en el clima de Europa',correct:true}],
+      explanation:'✅ ¡Impresionante! La mayor cascada submarina está en el Estrecho de Dinamarca y cae desde 3.500 metros. Este movimiento de agua mueve calor por todo el Atlántico, influyendo en el clima de países como el Reino Unido o Irlanda.',
+      difficulty:'hard',
+      helpCard:'Las corrientes oceánicas (incluidas las cascadas submarinas) transportan calor de un lugar a otro. Son como el sistema de calefacción del planeta.'
+    },
+  ],
+  // PHASE 4: Mediterráneo + Continental
+  [
+    {
+      text: '¿Cuál es la característica más especial del clima mediterráneo en verano?',
+      options: [{text:'Sequía estival: poca o nula lluvia y mucho calor',correct:true},{text:'Lluvias muy abundantes y temperaturas frescas',correct:false},{text:'Nieves frecuentes y vientos fuertes',correct:false}],
+      explanation:'✅ ¡Exacto! El verano mediterráneo es seco y caluroso (más de 22°C). La lluvia se concentra en otoño e invierno. Por eso Sevilla tiene esa diferencia tan grande entre el verano y el invierno lluvioso.',
+      difficulty:'easy',
+      helpCard:'MEDITERRÁNEO: Verano = SECO y CALUROSO. Invierno = LLUVIOSO y SUAVE. ¡Justo al contrario que el atlántico!'
+    },
+    {
+      text: '¿Qué estrategia usan el romero y el tomillo para sobrevivir al verano mediterráneo?',
+      options: [{text:'Pierden todas sus hojas como los árboles en otoño',correct:false},{text:'Entran en una especie de "hibernación estival" deteniendo su crecimiento',correct:true},{text:'Absorben agua del mar directamente por las raíces',correct:false}],
+      explanation:'✅ ¡Muy bien! Estas plantas detienen su crecimiento en verano para gastar menos agua. Se llama HIBERNACIÓN ESTIVAL. Cuando llegan las lluvias de otoño, vuelven a crecer con fuerza.',
+      difficulty:'easy',
+      helpCard:'Plantas mediterráneas → HIBERNACIÓN ESTIVAL en verano (como los osos en invierno, pero por el calor y la sequía). Hojas pequeñas y cerosas para perder menos agua.'
+    },
+    {
+      text: '¿Cuál es la diferencia más importante entre el clima mediterráneo y el continental?',
+      options: [{text:'El mediterráneo tiene más lluvia total al año',correct:false},{text:'Solo se diferencian en los animales que viven en cada zona',correct:false},{text:'El continental tiene temperaturas mucho más extremas: inviernos muy fríos y veranos muy calurosos',correct:true}],
+      explanation:'✅ ¡Perfecto! La clave del clima continental es la AMPLITUD TÉRMICA extrema: puede pasar de -20°C en invierno a +35°C en verano. El mediterráneo tiene inviernos suaves; el continental, inviernos muy duros.',
+      difficulty:'medium',
+      helpCard:'Continental = EXTREMOS: inviernos bajo 0°C, veranos sobre 30°C. Mediterráneo = veranos calurosos pero inviernos SUAVES. La diferencia clave es el invierno.'
+    },
+    {
+      text: '¿Por qué en el interior de los continentes (clima continental) apenas hay primavera ni otoño?',
+      options: [{text:'Porque el cambio del frío polar al calor sofocante es tan rápido que apenas hay transición',correct:true},{text:'Porque los agricultores eliminan esas estaciones',correct:false},{text:'Porque hay más horas de sol que en las costas',correct:false}],
+      explanation:'✅ ¡Excelente! En Siberia o en el centro de Rusia, el invierno termina y casi de inmediato llega el verano caluroso. Las estaciones intermedias son tan breves que parece que no existen.',
+      difficulty:'medium',
+      helpCard:'En el clima continental los cambios son TAN BRUSCOS que la primavera y el otoño apenas duran. De -15°C a +30°C en pocas semanas.'
+    },
+    {
+      text: 'California (EEUU) y el sur de Australia tienen características similares al clima mediterráneo español aunque están muy lejos. ¿Por qué?',
+      options: [{text:'Porque hablan idiomas parecidos al español',correct:false},{text:'Porque están en latitudes similares con mar cercano y cadenas montañosas que bloquean el frío',correct:true},{text:'Porque tienen la misma cantidad de población',correct:false}],
+      explanation:'✅ ¡Fantástico! El clima mediterráneo aparece en zonas similares del planeta: entre los 30 y 45 grados de latitud, en la costa oeste de los continentes, con montañas que protegen del frío. Por eso Chile, Sudáfrica y Australia tienen zonas con clima mediterráneo.',
+      difficulty:'hard',
+      helpCard:'El clima mediterráneo se repite en varios puntos del mundo con características similares: latitud parecida + mar + montañas. No es exclusivo del Mediterráneo.'
+    },
+  ],
+  // PHASE 5: Vida y adaptaciones
+  [
+    {
+      text: '¿Por qué el lince ibérico es símbolo del clima mediterráneo?',
+      options: [{text:'Porque es el animal más rápido de España',correct:false},{text:'Porque vive en las nieves del norte',correct:false},{text:'Porque está adaptado a los veranos secos y los matorrales mediterráneos donde caza',correct:true}],
+      explanation:'✅ ¡Muy bien! El lince ibérico caza sobre todo conejos en los matorrales y bosques mediterráneos. Está perfectamente adaptado a ese entorno seco con mucha vegetación baja.',
+      difficulty:'easy',
+      helpCard:'Lince ibérico = clima MEDITERRÁNEO. Alce y reno = clima CONTINENTAL. Oso pardo y ballenas = clima ATLÁNTICO.'
+    },
+    {
+      text: '¿Qué adaptación tienen los animales del clima continental para sobrevivir a los inviernos?',
+      options: [{text:'Desarrollan pelajes muy gruesos o hibernan durante los meses más fríos',correct:true},{text:'Migran todos a climas más cálidos permanentemente',correct:false},{text:'Se entierran bajo tierra todo el verano',correct:false}],
+      explanation:'✅ ¡Exacto! El alce tiene un pelaje denso que lo protege de temperaturas de -40°C. Otros animales, como algunos osos, hibernan durante los meses más fríos para no gastar energía cuando no hay comida.',
+      difficulty:'easy',
+      helpCard:'Clima continental = inviernos muy fríos → animales con PELAJE GRUESO o que HIBERNAN. La hibernación es un estado de sueño profundo para ahorrar energía.'
+    },
+    {
+      text: '¿Qué tienen en común las plantas mediterráneas (romero, tomillo, olivo) para adaptarse a la sequía?',
+      options: [{text:'Todas pierden sus hojas en verano como los árboles caducos',correct:false},{text:'Tienen hojas pequeñas, duras o cerosas que reducen la pérdida de agua',correct:true},{text:'Crecen solo de noche para evitar el calor del sol',correct:false}],
+      explanation:'✅ ¡Perfecto! Las plantas mediterráneas tienen hojas pequeñas (menos superficie = menos evaporación) o cubiertas de cera o pelillos para retener la humedad. El olivo tiene hojas plateadas que reflejan el sol.',
+      difficulty:'medium',
+      helpCard:'Hojas pequeñas o cerosas = menos EVAPORACIÓN. Es la adaptación principal a la sequía. También algunas tienen raíces muy profundas para buscar agua.'
+    },
+    {
+      text: '¿Por qué los bosques atlánticos (robles, hayas) tienen hojas grandes y verdes todo el año?',
+      options: [{text:'Porque tienen más clorofila que otros árboles',correct:false},{text:'Porque la lluvia constante les permite mantener hojas grandes sin riesgo de deshidratación',correct:true},{text:'Porque el sol es más fuerte en el norte que en el sur',correct:false}],
+      explanation:'✅ ¡Excelente razonamiento! Con agua abundante, no necesitan ahorrarla. Sus hojas grandes capturan más luz solar para hacer fotosíntesis. Es justo lo contrario de las plantas mediterráneas.',
+      difficulty:'medium',
+      helpCard:'Clima atlántico = mucha agua → hojas GRANDES para capturar más sol. Clima mediterráneo = poca agua → hojas PEQUEÑAS para perder menos agua.'
+    },
+    {
+      text: '¿Qué pasaría si desapareciesen las corrientes oceánicas del Atlántico Norte?',
+      options: [{text:'El clima de Europa sería mucho más frío, especialmente en el norte',correct:true},{text:'Habría más lluvias en todo el mundo',correct:false},{text:'El clima de Europa sería más cálido y seco',correct:false}],
+      explanation:'✅ ¡Reflexión brillante! Las corrientes oceánicas transportan agua cálida desde el Caribe hasta Europa. Sin ellas, países como Irlanda, Reino Unido o Noruega tendrían climas mucho más fríos y duros, parecidos al de Canadá a la misma latitud.',
+      difficulty:'hard',
+      helpCard:'Las corrientes oceánicas son como una "calefacción" para Europa. El Atlántico lleva agua caliente del Caribe hacia el norte. Sin eso, Europa sería mucho más fría.'
+    },
+  ]
+];
+
+const CELEBRATIONS = [
+  ['🎉','¡Fantástico!','Has completado la primera fase. ¡Tu exploración acaba de comenzar!'],
+  ['🌊','¡Increíble!','Dominas los factores del clima como un auténtico geógrafo.'],
+  ['🌿','¡Excelente trabajo!','El clima atlántico no tiene secretos para ti.'],
+  ['☀️','¡Brillante!','Has conquistado los climas mediterráneo y continental.'],
+  ['🏆','¡CAMPEÓN/A DEL CLIMA!','Has completado todas las fases. ¡Eres un/a explorador/a experto/a!'],
+];
+
+const GUIDE_MESSAGES = [
+  '¡Hola, explorador/a! Soy <strong>Atlas</strong>, tu guía climatólogo/a. Recorreremos juntos los climas del mundo. ¡Prepara tu cuaderno y tu lápiz!',
+  '¡Muy bien! Ahora vamos a descubrir por qué no llueve igual en todas partes del mundo. Los factores del clima son fascinantes.',
+  '¡Rumbo al norte! Vamos a explorar las tierras verdes bañadas por el océano Atlántico. ¿Listo/a para mojarte un poco?',
+  '¡Calor y frío extremo! En esta fase compararemos el clima mediterráneo (que conoces bien desde Sevilla) con el continente helado.',
+  '¡Última expedición! Vamos a descubrir cómo los seres vivos han aprendido a sobrevivir en cada clima. ¡Es fascinante!',
+];
+
+const INTRO_CONTENT = [
+  // Phase 1
+  `<div class="content-box">
+    <h3>🌤️ ¿Qué es el tiempo atmosférico?</h3>
+    <p>El <strong>tiempo atmosférico</strong> es el estado del cielo en un lugar y en un momento concreto. Puede ser soleado, lluvioso, nublado, frío o caluroso. ¡Puede cambiar en pocas horas!</p>
+    <ul style="margin-top:10px">
+      <li><strong>Temperatura:</strong> el calor o frío del aire, en grados Celsius (°C)</li>
+      <li><strong>Precipitación:</strong> el agua que cae (lluvia, nieve, granizo)</li>
+      <li><strong>Humedad:</strong> el vapor de agua que hay en el aire</li>
+      <li><strong>Presión atmosférica:</strong> el peso del aire sobre la superficie</li>
+      <li><strong>Viento:</strong> el aire en movimiento</li>
+    </ul>
+  </div>
+  <div class="content-box">
+    <h3>🌍 ¿Y el clima?</h3>
+    <p>El <strong>clima</strong> es cómo suele ser el tiempo en un lugar a lo largo de muchos años. No cambia de un día para otro. Si en Sevilla hace calor cada verano desde hace décadas, eso es su clima.</p>
+  </div>
+  <div class="content-box">
+    <h3>🔬 Los instrumentos meteorológicos</h3>
+    <ul>
+      <li><strong>Termómetro:</strong> mide la temperatura</li>
+      <li><strong>Pluviómetro:</strong> mide la cantidad de lluvia (litros/m²)</li>
+      <li><strong>Veleta:</strong> indica la dirección del viento</li>
+      <li><strong>Anemómetro:</strong> mide la velocidad del viento</li>
+      <li><strong>Barómetro:</strong> mide la presión atmosférica</li>
+    </ul>
+  </div>`,
+  // Phase 2
+  `<div class="content-box">
+    <h3>🗺️ ¿Por qué no hace el mismo tiempo en todas partes?</h3>
+    <p>El clima de un lugar depende de cuatro factores principales:</p>
+    <ul style="margin-top:10px">
+      <li><strong>Latitud:</strong> cuanto más cerca del Ecuador, más calor. Los rayos del sol llegan más directos y concentrados.</li>
+      <li><strong>Influencia del mar:</strong> el océano actúa como un aire acondicionado natural. Refresca en verano y calienta en invierno.</li>
+      <li><strong>Relieve:</strong> las montañas bloquean las nubes y pueden crear zonas muy lluviosas y zonas muy secas muy cerca una de la otra.</li>
+      <li><strong>Altitud:</strong> a mayor altura, más frío. Por eso las cimas de las montañas tienen nieve aunque estén en zonas cálidas.</li>
+    </ul>
+  </div>
+  <div class="content-box">
+    <h3>💡 Un ejemplo cercano</h3>
+    <p>En Sevilla hace mucho calor en verano porque está <strong>lejos del mar</strong> y en una <strong>latitud cálida</strong>. Sin embargo, en Huelva, más cerca del Atlántico, los veranos son algo más frescos. ¡El mar cambia el clima!</p>
+  </div>`,
+  // Phase 3
+  `<div class="content-box">
+    <h3>🌊 El clima atlántico u oceánico</h3>
+    <p>Este clima aparece en las zonas cercanas al Atlántico: Galicia, norte de España, Francia, Irlanda, Reino Unido...</p>
+    <ul style="margin-top:10px">
+      <li><strong>Temperaturas:</strong> suaves todo el año. Veranos frescos (18-23°C) e inviernos moderados (6-12°C).</li>
+      <li><strong>Lluvias:</strong> constantes y abundantes. Más de 1.000 mm al año. Llueve en todas las estaciones.</li>
+      <li><strong>Vegetación:</strong> bosques de robles y hayas, prados siempre verdes.</li>
+      <li><strong>Fauna:</strong> oso pardo, lobo, ciervo en tierra. Ballenas y delfines en el mar.</li>
+    </ul>
+  </div>
+  <div class="content-box">
+    <h3>🌡️ La inercia térmica del mar</h3>
+    <p>El agua del mar tarda mucho en calentarse y en enfriarse. Por eso <strong>en verano refresca</strong> el aire de la costa y <strong>en invierno lo calienta</strong>. Es como un gigantesco radiador natural en invierno y un enorme aire acondicionado en verano. ¡Las ciudades con clima atlántico se benefician de esto!</p>
+  </div>`,
+  // Phase 4
+  `<div class="content-box">
+    <h3>☀️ El clima mediterráneo</h3>
+    <p>Lo encontramos alrededor del mar Mediterráneo: Andalucía, Cataluña, Italia, Grecia... y también en California, Chile o el sur de Australia.</p>
+    <ul style="margin-top:10px">
+      <li><strong>Veranos:</strong> secos y calurosos (más de 22°C). Casi no llueve.</li>
+      <li><strong>Inviernos:</strong> suaves y lluviosos (300-700 mm al año).</li>
+      <li><strong>Vegetación:</strong> pinos, olivos, romero, tomillo.</li>
+      <li><strong>Fauna:</strong> lince ibérico, águila imperial, cigarras.</li>
+    </ul>
+  </div>
+  <div class="content-box">
+    <h3>❄️ El clima continental</h3>
+    <p>Aparece en el interior de los grandes continentes: Siberia, centro de Rusia, grandes llanuras de Norteamérica...</p>
+    <ul style="margin-top:10px">
+      <li><strong>Temperaturas extremas:</strong> inviernos muy fríos (bajo 0°C), veranos muy calurosos (más de 30°C).</li>
+      <li><strong>Lluvias escasas:</strong> 300-700 mm. Nieve en invierno, tormentas en verano.</li>
+      <li><strong>Vegetación:</strong> taiga (pinos y abetos), praderas.</li>
+      <li><strong>Fauna:</strong> alces, renos y animales con hibernación.</li>
+    </ul>
+  </div>
+  <table class="climate-table">
+    <thead><tr><th>Clima</th><th>Verano</th><th>Invierno</th><th>Lluvia/año</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Atlántico</strong></td><td>18-23°C</td><td>6-12°C</td><td>>1000 mm</td></tr>
+      <tr><td><strong>Mediterráneo</strong></td><td>>22°C (seco)</td><td>Suave</td><td>300-700 mm</td></tr>
+      <tr><td><strong>Continental</strong></td><td>>30°C</td><td><0°C</td><td>300-700 mm</td></tr>
+    </tbody>
+  </table>`,
+  // Phase 5
+  `<div class="content-box">
+    <h3>🌱 Cómo se adaptan las plantas</h3>
+    <ul>
+      <li><strong>Clima atlántico:</strong> hojas grandes y verdes para aprovechar la abundante luz y agua.</li>
+      <li><strong>Clima mediterráneo:</strong> hojas pequeñas, duras o cerosas para perder poca agua. En verano entran en "hibernación estival".</li>
+      <li><strong>Clima continental:</strong> la taiga tiene árboles con forma cónica (pinos, abetos) para que la nieve resbale sin romper las ramas.</li>
+    </ul>
+  </div>
+  <div class="content-box">
+    <h3>🦁 Cómo se adaptan los animales</h3>
+    <ul>
+      <li><strong>Clima atlántico:</strong> osos pardos con pelaje denso. Cetáceos (ballenas, delfines) en aguas ricas en nutrientes.</li>
+      <li><strong>Clima mediterráneo:</strong> el lince ibérico caza en matorrales secos. Las cigarras cantan en verano seco.</li>
+      <li><strong>Clima continental:</strong> alces y renos con pelaje muy grueso. Muchos animales hibernan durante meses.</li>
+    </ul>
+  </div>
+  <div class="content-box">
+    <h3>💡 Conceptos clave</h3>
+    <ul>
+      <li><strong>Amplitud térmica:</strong> diferencia entre la temperatura máxima y mínima del año. Muy grande en el continental.</li>
+      <li><strong>Estación seca:</strong> periodo sin lluvias. Muy marcado en el clima mediterráneo (verano).</li>
+      <li><strong>Hibernación estival:</strong> parada del crecimiento de las plantas en verano para sobrevivir a la sequía.</li>
+      <li><strong>Inercia térmica:</strong> capacidad del mar de regular la temperatura costera.</li>
+    </ul>
+  </div>`
+];
+
+
+// ============================================================
+// GAME STATE
+// ============================================================
+let state = {
+  screen: 'welcome',   // welcome | phase | paper | celebrate | final | diploma
+  phase: 0,            // 0-4
+  step: 'intro',       // intro | question | paper | celebrate
+  qIndex: 0,
+  score: 0,
+  comodines: 5,
+  wordsFound: [],
+  consecutiveFails: 0,
+  questionsAnswered: 0,
+  totalQ: 5,
+  paperValidated: false,
+  faqOpen: false,
+  answered: false,
+};
+
+// ============================================================
+// UTILITY
+// ============================================================
+function $(id){ return document.getElementById(id); }
+function html(id,content){ $(id).innerHTML = content; }
+
+function showModal(title, body){
+  $('modal-title').textContent = title;
+  $('modal-body').innerHTML = body;
+  $('modal-overlay').classList.remove('hidden');
+}
+function closeModal(){
+  $('modal-overlay').classList.add('hidden');
+}
+
+function updateTopBar(){
+  if(state.screen === 'welcome'){ 
+    $('topbar').classList.add('hidden');
+    $('progress-wrap').classList.add('hidden');
+    $('phrase-bar').classList.add('hidden');
+    return;
+  }
+  $('topbar').classList.remove('hidden');
+  $('progress-wrap').classList.remove('hidden');
+  $('phrase-bar').classList.remove('hidden');
+  $('phase-label').textContent = `Fase ${state.phase+1}/5`;
+  // comodines
+  let bar = '';
+  for(let i=0;i<5;i++){
+    const used = i >= state.comodines;
+    bar += `<button class="comodin-btn${used?' used':''}" onclick="useComodin()" title="Pista (${state.comodines} restantes)">🧭</button>`;
+  }
+  $('comodin-bar').innerHTML = bar;
+  // phrase slots
+  const words = ['EL','CLIMA','MOLDEA','NUESTRA','TIERRA'];
+  let slots = '';
+  for(let i=0;i<5;i++){
+    const revealed = state.wordsFound.includes(i);
+    slots += `<div class="phrase-slot${revealed?' revealed':''}">${revealed ? words[i] : '?'}</div>`;
+  }
+  $('phrase-slots').innerHTML = slots;
+  // progress
+  const totalSteps = 5 * 3; // 5 phases * 3 steps
+  const done = state.phase * 3 + (state.step==='intro'?0 : state.step==='question'?1 : state.step==='paper'?2 : 3);
+  const pct = Math.round(done/totalSteps*100);
+  $('progress-fill').style.width = pct+'%';
+  $('progress-text').textContent = `Fase ${state.phase+1}: ${['Repaso','Preguntas','Prueba en papel','¡Completada!'][['intro','question','paper','celebrate'].indexOf(state.step)]}`;
+  $('progress-pct').textContent = pct+'%';
+}
+
+function useComodin(){
+  if(state.comodines <= 0){ showModal('😔 Sin pistas','Ya has usado todas tus pistas. ¡Confía en lo que has aprendido y consulta tu libro o cuaderno!'); return; }
+  if(state.screen !== 'phase' || state.step !== 'question'){ 
+    showModal('🧭 Pista','Las pistas solo se pueden usar cuando estás respondiendo una pregunta. ¡Llega hasta las preguntas y úsala allí!'); return; 
+  }
+  const q = PHASE_QUESTIONS[state.phase][state.qIndex];
+  state.comodines--;
+  updateTopBar();
+  showModal('🧭 Pista — Comodín usado',`<strong>${q.helpCard}</strong><br><br><em>💡 También puedes consultar tu libro de texto o tu cuaderno para encontrar la respuesta.</em><br><br>Te quedan <strong>${state.comodines}</strong> pistas.`);
+}
+
+function renderFAQ(phaseIdx){
+  const items = FAQS[phaseIdx];
+  let html = `<div class="faq-section">
+    <button class="faq-toggle" onclick="toggleFAQ(this)">❓ Preguntas frecuentes <span>▼</span></button>
+    <div class="faq-list" id="faq-list">`;
+  items.forEach((item,i)=>{
+    html += `<div class="faq-item">
+      <div class="faq-q" onclick="toggleFAQItem(${i})">📌 ${item.q} <span id="faq-arrow-${i}">▸</span></div>
+      <div class="faq-a" id="faq-a-${i}">${item.a}</div>
+    </div>`;
+  });
+  html += `</div></div>`;
+  return html;
+}
+function toggleFAQ(btn){
+  const list = $('faq-list');
+  list.classList.toggle('open');
+  btn.querySelector('span').textContent = list.classList.contains('open') ? '▲' : '▼';
+}
+function toggleFAQItem(i){
+  const a = $('faq-a-'+i);
+  const arr = $('faq-arrow-'+i);
+  a.classList.toggle('open');
+  arr.textContent = a.classList.contains('open') ? '▾' : '▸';
+}
+
+
+// ============================================================
+// SCREEN RENDERERS
+// ============================================================
+function renderWelcome(){
+  state.screen='welcome';
+  updateTopBar();
+  html('main-content',`
+    <div class="card welcome-screen">
+      <div class="big-icon">🌍</div>
+      <h1>Exploradores del Clima</h1>
+      <p class="subtitle">Una aventura por los climas del mundo para<br><strong>5º de Primaria — CEIP San Fernando</strong><br>Fuente del Rey, Dos Hermanas</p>
+      <div class="school-badge">🏫 5ºA · Conocimiento del Medio</div>
+      <div class="guide-box" style="text-align:left;margin:20px 0 16px">
+        <div class="guide-avatar">🧭</div>
+        <div class="guide-text">¡Hola, explorador/a! Soy <strong>Atlas</strong>, tu guía climatólogo/a. Recorreremos juntos los climas del mundo. Necesitarás tu <strong>cuaderno, tu libro y tu lápiz</strong> durante el viaje. ¡Prepárate para grandes descubrimientos!</div>
+      </div>
+      <div class="content-box" style="text-align:left;margin-bottom:18px">
+        <h3>📋 Cómo funciona este juego</h3>
+        <ul>
+          <li>🗺️ <strong>5 fases</strong> de exploración climática</li>
+          <li>🧭 Tienes <strong>5 pistas</strong> para todo el juego (úsalas bien)</li>
+          <li>📝 En cada fase habrá una <strong>tarea en papel</strong> que valida tu profe</li>
+          <li>🔑 Al final de cada fase recibirás una <strong>palabra secreta</strong> para apuntar en tu cuaderno</li>
+          <li>🏆 Al final podrás conseguir tu <strong>diploma de explorador/a del clima</strong></li>
+          <li>📚 Puedes consultar tu libro y cuaderno cuando lo necesites</li>
+        </ul>
+      </div>
+      <button class="btn btn-accent btn-block" onclick="startGame()" style="font-size:1.1rem;padding:16px">
+        🚀 ¡Comenzar la expedición!
+      </button>
+    </div>
+  `);
+}
+
+function startGame(){
+  state.phase=0; state.step='intro'; state.comodines=5;
+  state.wordsFound=[]; state.screen='phase';
+  renderPhaseIntro();
+}
+
+function renderPhaseIntro(){
+  state.step='intro'; state.qIndex=0; state.answered=false; state.consecutiveFails=0;
+  state.paperValidated=false;
+  updateTopBar();
+  const titles = ['¿Tiempo o clima?','Los factores del clima','El clima atlántico','Los climas mediterráneo y continental','El clima y la vida'];
+  const subtitles = [
+    'Descubre la diferencia entre tiempo y clima, y conoce los instrumentos de los meteorólogos.',
+    'Averigua por qué no hace el mismo tiempo en todos los rincones del planeta.',
+    'Explora las tierras verdes del norte bañadas por el Atlántico.',
+    'Del sol abrasador al frío polar extremo: dos climas muy distintos.',
+    'Cómo los seres vivos se adaptan a cada tipo de clima.'
+  ];
+  html('main-content',`
+    <div class="phase-header">
+      <div class="num">🗺️ Fase ${state.phase+1} de 5</div>
+      <h2>${titles[state.phase]}</h2>
+      <p>${subtitles[state.phase]}</p>
+    </div>
+    <div class="guide-box">
+      <div class="guide-avatar">🧭</div>
+      <div class="guide-text">${GUIDE_MESSAGES[state.phase]}</div>
+    </div>
+    <div class="card">
+      <div class="tts-permission-box" id="tts-perm-box-${state.phase}" style="display:none">
+        <h4>🔊 Lectura en voz alta</h4>
+        <p>El alumno/a quiere escuchar el texto. El texto se iluminará palabra por palabra para facilitar la lectura.</p>
+        <div class="tts-perm-btns">
+          <button class="tts-perm-teacher" onclick="ttsTeacherAllow(${state.phase})">✅ Profe: Permitir audio</button>
+          <button class="tts-perm-deny" onclick="ttsTeacherDeny(${state.phase})">❌ Profe: Sin audio</button>
+        </div>
+      </div>
+      <div class="tts-bar" id="tts-bar-${state.phase}" style="display:${ttsState.permitted===true?'flex':'none'}">
+        <button class="tts-btn" id="tts-play-btn-${state.phase}" onclick="ttsTrigger(${state.phase})">🔊 Escuchar texto</button>
+        <span class="tts-info">📖 Las palabras se iluminarán mientras se lee el texto</span>
+      </div>
+      <div style="text-align:right;margin-bottom:8px">
+        <button onclick="ttsRequestPermission(${state.phase})" style="background:none;border:2px solid var(--success);border-radius:8px;padding:6px 14px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;font-size:0.82rem;color:var(--success)">🔊 Pedir permiso para escuchar</button>
+      </div>
+      <div id="tts-text-target-${state.phase}">${INTRO_CONTENT[state.phase]}</div>
+      ${renderFAQ(state.phase)}
+      <div class="mt-20 text-center">
+        <button class="btn btn-primary" onclick="startQuestions()">📝 ¡A responder preguntas! →</button>
+      </div>
+    </div>
+  `);
+}
+
+function startQuestions(){
+  state.step='question'; state.qIndex=0; state.questionsAnswered=0;
+  state.score=0; state.consecutiveFails=0; state.answered=false;
+  renderQuestion();
+}
+
+function renderQuestion(){
+  updateTopBar();
+  const q = PHASE_QUESTIONS[state.phase][state.qIndex];
+  const total = PHASE_QUESTIONS[state.phase].length;
+  const showHelp = state.consecutiveFails >= 2;
+  html('main-content',`
+    <div class="phase-header" style="padding:16px 22px">
+      <div class="num">🗺️ Fase ${state.phase+1} · Pregunta ${state.qIndex+1} de ${total}</div>
+      <h2 style="font-size:1.2rem">Demuestra lo que sabes</h2>
+    </div>
+    ${showHelp ? `<div class="help-card"><h4>📖 Repaso rápido</h4><p>${q.helpCard}<br><br>💡 También puedes mirar tu libro o cuaderno antes de responder.</p></div>` : ''}
+    <div class="card">
+      <div class="question-block">
+        <div class="question-text">❓ ${q.text}</div>
+        <div class="options" id="options-container">
+          ${q.options.map((o,i)=>`<button class="option-btn" onclick="selectAnswer(${i})" id="opt-${i}">${o.text}</button>`).join('')}
+        </div>
+        <div id="feedback-area"></div>
+      </div>
+      ${renderFAQ(state.phase)}
+      <div class="mt-16" style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;color:var(--text-soft)">
+        <span>🧭 Pistas: ${state.comodines}/5</span>
+        <span>💡 Recuerda: puedes consultar tu libro y cuaderno</span>
+      </div>
+    </div>
+  `);
+}
+
+function selectAnswer(idx){
+  if(state.answered) return;
+  state.answered = true;
+  const q = PHASE_QUESTIONS[state.phase][state.qIndex];
+  const correct = q.options[idx].correct;
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach((b,i)=>{
+    b.disabled=true;
+    if(q.options[i].correct) b.classList.add('correct');
+    else if(i===idx && !correct) b.classList.add('wrong');
+  });
+  const fb = $('feedback-area');
+  if(correct){
+    state.consecutiveFails=0; state.score++;
+    fb.innerHTML=`<div class="feedback-box correct">✅ ${q.explanation}</div>`;
+  } else {
+    state.consecutiveFails++;
+    fb.innerHTML=`<div class="feedback-box wrong">❌ No era esa. ${q.explanation}</div>`;
+  }
+  state.questionsAnswered++;
+  // Add continue button
+  const continueBtn = document.createElement('div');
+  continueBtn.style.cssText = 'text-align:center;margin-top:14px';
+  continueBtn.innerHTML = '<button class="btn btn-primary" onclick="nextQuestion()" style="font-size:1rem;padding:12px 28px">¡Seguimos! →</button>';
+  document.querySelector('.question-block').appendChild(continueBtn);
+}
+
+function nextQuestion(){
+  const total = PHASE_QUESTIONS[state.phase].length;
+  if(state.qIndex < total-1){
+    state.qIndex++; state.answered=false;
+    renderQuestion();
+  } else {
+    // Check if failed 2 or more questions
+    const wrong = total - state.score;
+    if(wrong >= 2){
+      renderRepeat(wrong, total);
+    } else {
+      renderPaperTask();
+    }
+  }
+}
+
+function renderRepeat(wrong, total){
+  updateTopBar();
+  html('main-content',`
+    <div class="phase-header" style="background:linear-gradient(135deg,#7B1FA2,#9C27B0)">
+      <div class="num">🔄 Fase ${state.phase+1} · Repaso necesario</div>
+      <h2 style="font-size:1.3rem">¡Vamos a repasar un poco más!</h2>
+      <p>Has fallado ${wrong} de ${total} preguntas. ¡Sin problema! Repasa el contenido y vuelve a intentarlo.</p>
+    </div>
+    <div class="guide-box">
+      <div class="guide-avatar">🧭</div>
+      <div class="guide-text">¡No te preocupes! Los exploradores de verdad repasan y aprenden de sus errores. Te recomiendo que <strong>leas de nuevo la información de esta fase</strong> y consultes tu libro o cuaderno antes de intentarlo otra vez.</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:3rem;margin-bottom:12px">📚</div>
+      <h3 style="color:#7B1FA2;font-family:'Fredoka One',cursive;margin-bottom:10px">¿Qué debes hacer ahora?</h3>
+      <p style="font-size:0.92rem;line-height:1.6;color:var(--text-soft);margin-bottom:20px">
+        1. Lee de nuevo la información de esta fase con atención.<br>
+        2. Consulta tu libro de texto y tus apuntes.<br>
+        3. Si tienes dudas, usa una pista o pregunta a tu profe.<br>
+        4. Cuando te sientas preparado/a, vuelve a intentar las preguntas.
+      </p>
+      <button class="btn btn-primary" onclick="retryPhase()" style="font-size:1rem;padding:13px 28px">🔄 Repasar y volver a intentarlo</button>
+    </div>
+  `);
+}
+
+function retryPhase(){
+  state.step='intro'; state.qIndex=0; state.score=0;
+  state.answered=false; state.consecutiveFails=0;
+  renderPhaseIntro();
+}
+
+function renderPaperTask(){
+  state.step='paper'; state.paperValidated=false;
+  updateTopBar();
+  const task = PAPER_TASKS[state.phase];
+  const correct = state.score;
+  const total = PHASE_QUESTIONS[state.phase].length;
+  html('main-content',`
+    <div class="phase-header" style="background:linear-gradient(135deg,#E65100,#F57C00)">
+      <div class="num">📝 Fase ${state.phase+1} · Tarea en papel</div>
+      <h2 style="font-size:1.3rem">¡Ahora a trabajar en el cuaderno!</h2>
+      <p>Has respondido ${correct} de ${total} preguntas correctamente. ¡Sigue así!</p>
+    </div>
+    <div class="guide-box">
+      <div class="guide-avatar">🧭</div>
+      <div class="guide-text">Esta parte no se hace en la tablet. Coge tu cuaderno, tu libro y tu lápiz. <strong>Tu profe te explicará la tarea</strong> y cuando la hayas hecho bien, te dará el OK para continuar.</div>
+    </div>
+    <div class="paper-task">
+      <div class="paper-icon">📄</div>
+      <h3>${task.title}</h3>
+      <p>${task.task}</p>
+      <div class="teacher-note">${task.teacherNote}</div>
+    </div>
+    ${renderFAQ(state.phase)}
+    <div style="text-align:center;margin-top:20px">
+      <p style="font-size:0.88rem;color:var(--text-soft);margin-bottom:12px">⏳ Espera a que tu profe revise tu trabajo y pulse el botón</p>
+      <button class="validate-btn" onclick="teacherValidate()">
+        ✅ El/la profe valida: ¡Tarea superada!
+      </button>
+    </div>
+  `);
+}
+
+function teacherValidate(){
+  state.paperValidated=true;
+  renderCelebration();
+}
+
+function renderCelebration(){
+  state.step='celebrate';
+  updateTopBar();
+  const [trophy, title, msg] = CELEBRATIONS[state.phase];
+  const word = PHRASES[state.phase];
+  if(!state.wordsFound.includes(state.phase)) state.wordsFound.push(state.phase);
+  updateTopBar();
+  html('main-content',`
+    <div class="card celebration">
+      <div class="trophy">${trophy}</div>
+      <h2>${title}</h2>
+      <p>${msg}</p>
+      <div class="stars">⭐⭐⭐</div>
+    </div>
+    <div class="word-reveal">
+      <p>🔑 La palabra secreta de esta fase es:</p>
+      <span class="word">${word}</span>
+      <div class="word-counter">Has encontrado ${state.wordsFound.length} de 5 palabras</div>
+    </div>
+    <div class="notebook-reminder">
+      ✏️ ¡Apunta la palabra <strong>${word}</strong> en tu cuaderno ahora mismo!<br>
+      La necesitarás al final del juego para descubrir la frase secreta.<br>
+      Llevas: ${state.wordsFound.map(i=>PHRASES[i]).join(' · ')}
+    </div>
+    <div class="mt-20 text-center">
+      ${state.phase < 4 
+        ? `<button class="btn btn-primary" onclick="nextPhase()">🗺️ Siguiente fase →</button>`
+        : `<button class="btn btn-success" onclick="renderFinal()" style="font-size:1.1rem;padding:16px 30px">🏆 ¡Ver frase final y diploma!</button>`
+      }
+    </div>
+  `);
+}
+
+function nextPhase(){
+  state.phase++; state.step='intro'; state.qIndex=0;
+  state.answered=false; state.consecutiveFails=0;
+  renderPhaseIntro();
+}
+
+function renderFinal(){
+  state.screen='final'; updateTopBar();
+  const phrase = PHRASES.join(' ');
+  html('main-content',`
+    <div class="card celebration">
+      <div class="trophy">🏆</div>
+      <h2>¡Eres un/a EXPLORADOR/A del Clima!</h2>
+      <p>Has completado las 5 fases y dominás los climas del mundo.<br>
+      ¡El CEIP San Fernando tiene un/a nuevo/a experto/a!</p>
+    </div>
+    <div class="word-reveal" style="margin-bottom:0">
+      <p>🔑 La frase secreta completa es:</p>
+      <div style="font-family:'Fredoka One',cursive;font-size:1.8rem;letter-spacing:3px;color:var(--accent);margin:12px 0">${phrase}</div>
+      <p style="font-size:0.88rem;opacity:0.85">¡Esta frase resume todo lo que has aprendido sobre los climas!</p>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3 style="color:var(--primary);margin-bottom:14px;font-family:'Fredoka One',cursive">🎓 Tu diploma de explorador/a</h3>
+      <p style="font-size:0.88rem;color:var(--text-soft);margin-bottom:14px">Escribe tu nombre para generar tu diploma personalizado:</p>
+      <input type="text" id="diploma-name-input" placeholder="Escribe tu nombre aquí" oninput="updateDiploma()" maxlength="40">
+      <div id="diploma-area" style="margin-top:16px"></div>
+    </div>
+  `);
+  updateDiploma();
+}
+
+function updateDiploma(){
+  const name = $('diploma-name-input').value || '___________________';
+  const today = new Date().toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'});
+  $('diploma-area').innerHTML = `
+    <div class="diploma">
+      <div class="deco">✦ ✦ ✦</div>
+      <h2>DIPLOMA DE EXPLORADOR/A DEL CLIMA</h2>
+      <hr class="diploma-divider">
+      <p>Se certifica que</p>
+      <div class="recipient">${name}</div>
+      <p>ha completado con éxito la misión<br><em>"Exploradores del Clima"</em><br>demostrando conocimientos sobre meteorología y los climas templados del mundo.</p>
+      <hr class="diploma-divider">
+      <p class="school">CEIP San Fernando · Fuente del Rey, Dos Hermanas</p>
+      <p>5º de Primaria · Conocimiento del Medio</p>
+      <div class="deco">🌍 🌊 ☀️ ❄️</div>
+      <div class="date">Sevilla, ${today}</div>
+      <hr class="diploma-divider">
+      <p style="font-size:0.75rem;color:#aaa">Elaborado por Luis Gómez y Elisa Sánchez · Podcast IA y Educación<br>Generado con asistencia de Claude (Anthropic) · Uso educativo no comercial</p>
+    </div>
+    <div style="background:#E8F5E9;border:2px solid var(--success);border-radius:10px;padding:14px;margin-top:12px;text-align:center">
+      <p style="font-size:0.92rem;color:#2E7D32;font-weight:700;margin-bottom:6px">📸 ¿Cómo guardar tu diploma?</p>
+      <p style="font-size:0.85rem;color:#388E3C;line-height:1.6">Haz una captura de pantalla para guardarlo.<br>
+      <strong>En tablet/móvil:</strong> pulsa el botón de encendido + bajar volumen al mismo tiempo.<br>
+      <strong>En ordenador:</strong> tecla <strong>Impr Pant</strong> o usa las teclas <strong>Windows + Shift + S</strong>.</p>
+    </div>
+  `;
+}
+
+
+// ============================================================
+// TTS (TEXT TO SPEECH) WITH WORD HIGHLIGHTING
+// ============================================================
+let ttsState = { active:false, utterance:null, permitted:null, words:[], spans:[], timer:null };
+
+const PHASE_TTS_TEXT = [
+  "Bienvenido a la fase uno. En esta fase aprenderás la diferencia entre el tiempo atmosférico y el clima. El tiempo atmosférico es el estado del cielo en un momento concreto: si hoy llueve, hace sol o hay viento. El clima, en cambio, describe cómo suele ser ese lugar durante muchos años. También conocerás los instrumentos que usan los meteorólogos: el termómetro mide la temperatura, el pluviómetro mide la lluvia, la veleta indica la dirección del viento, el anemómetro mide la velocidad del viento y el barómetro mide la presión atmosférica.",
+  "Bienvenido a la fase dos. Aquí descubrirás por qué no hace el mismo clima en todas partes del mundo. El clima depende de cuatro factores: la latitud, que es la distancia al Ecuador; la influencia del mar, que suaviza las temperaturas; el relieve, es decir, las montañas y valles que bloquean las nubes; y la altitud, porque a mayor altura hace más frío. Por ejemplo, en Sevilla hace mucho calor en verano porque está lejos del mar y en una latitud cálida.",
+  "Bienvenido a la fase tres. Vamos a explorar el clima atlántico u oceánico. Este clima aparece en las zonas cercanas al Atlántico: Galicia, el norte de España, Irlanda y el Reino Unido. Las temperaturas son suaves todo el año y llueve constantemente, más de mil milímetros al año. La vegetación son bosques de robles y hayas, y los prados están siempre verdes. El mar actúa como un aire acondicionado natural: refresca en verano y calienta en invierno. A esto lo llamamos inercia térmica.",
+  "Bienvenido a la fase cuatro. En esta fase compararás dos climas muy distintos. El clima mediterráneo tiene veranos secos y calurosos y lluvias concentradas en otoño e invierno. La vegetación típica son pinos, olivos, romero y tomillo. El clima continental, en cambio, tiene temperaturas extremas: inviernos muy fríos bajo cero grados y veranos muy calurosos por encima de treinta grados. La diferencia entre el máximo y el mínimo del año se llama amplitud térmica y en el clima continental es enorme.",
+  "Bienvenido a la fase cinco. En esta última fase estudiarás cómo los seres vivos se han adaptado a cada tipo de clima. En el clima mediterráneo, plantas como el romero y el tomillo detienen su crecimiento en verano para sobrevivir a la sequía. En el clima continental, animales como el alce tienen pelajes muy gruesos y otros hibernan durante los meses más fríos. En el clima atlántico, los bosques tienen hojas grandes para aprovechar la abundante lluvia y la luz solar."
+];
+
+function ttsRequestPermission(phaseIdx) {
+  if(ttsState.permitted === true) { ttsStart(phaseIdx); return; }
+  if(ttsState.permitted === false) { return; }
+  // Show permission UI
+  const permBox = document.getElementById('tts-perm-box-'+phaseIdx);
+  if(permBox) permBox.style.display='block';
+}
+
+function ttsTeacherAllow(phaseIdx){
+  ttsState.permitted = true;
+  const permBox = document.getElementById('tts-perm-box-'+phaseIdx);
+  if(permBox) permBox.style.display='none';
+  const bar = document.getElementById('tts-bar-'+phaseIdx);
+  if(bar) bar.style.display='flex';
+  ttsStart(phaseIdx);
+}
+
+function ttsTeacherDeny(phaseIdx){
+  ttsState.permitted = false;
+  const permBox = document.getElementById('tts-perm-box-'+phaseIdx);
+  if(permBox) permBox.style.display='none';
+  showModal('🔇 Sin audio','Continuarás leyendo el texto sin audio. ¡Puedes hacerlo! Lee con calma, párrafo por párrafo.');
+}
+
+function ttsStart(phaseIdx){
+  if(!('speechSynthesis' in window)){ showModal('⚠️','Lo siento, este navegador no admite lectura en voz alta. Prueba con Chrome.'); return; }
+  ttsStop();
+  const text = PHASE_TTS_TEXT[phaseIdx];
+  // Highlight words in content area
+  ttsHighlightSetup(text, phaseIdx);
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'es-ES'; u.rate = 0.88; u.pitch = 1.05;
+  ttsState.utterance = u; ttsState.active = true;
+  let wordIdx = 0;
+  u.onboundary = (e) => {
+    if(e.name === 'word'){
+      ttsState.spans.forEach(s=>s.classList.remove('speaking'));
+      if(ttsState.spans[wordIdx]) ttsState.spans[wordIdx].classList.add('speaking');
+      wordIdx++;
+    }
+  };
+  u.onend = () => { ttsState.active=false; ttsState.spans.forEach(s=>s.classList.remove('speaking')); updateTTSButton(phaseIdx,false); };
+  u.onerror = () => { ttsState.active=false; updateTTSButton(phaseIdx,false); };
+  window.speechSynthesis.speak(u);
+  updateTTSButton(phaseIdx,true);
+}
+
+function ttsHighlightSetup(text, phaseIdx){
+  // Wrap each word in the tts-text-target span
+  const target = document.getElementById('tts-text-target-'+phaseIdx);
+  if(!target) return;
+  const words = text.split(/(\s+)/);
+  let spansHTML = '';
+  let spanIdx = 0;
+  words.forEach(part => {
+    if(/\S/.test(part)){
+      spansHTML += `<span class="word-highlight" id="tts-w-${phaseIdx}-${spanIdx++}">${part}</span>`;
+    } else {
+      spansHTML += part;
+    }
+  });
+  target.innerHTML = spansHTML;
+  ttsState.spans = Array.from(target.querySelectorAll('.word-highlight'));
+}
+
+function ttsStop(){
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  ttsState.active=false; ttsState.utterance=null;
+  ttsState.spans.forEach(s=>s.classList.remove('speaking'));
+}
+
+function ttsTrigger(phaseIdx){
+  if(ttsState.active){ ttsStop(); updateTTSButton(phaseIdx,false); }
+  else { ttsStart(phaseIdx); }
+}
+
+function updateTTSButton(phaseIdx, playing){
+  const btn = document.getElementById('tts-play-btn-'+phaseIdx);
+  if(btn) btn.innerHTML = playing ? '⏹ Detener lectura' : '🔊 Escuchar texto';
+  if(btn) btn.className = 'tts-btn' + (playing?' stop':'');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderWelcome();
+</script>
+</body>
+</html>
